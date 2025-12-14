@@ -1,0 +1,13 @@
+/* Login sayfasına özel stiller */
+.login-container {
+width: 300px;
+margin: 100px auto;
+text-align: center;
+}
+
+
+.login-form input {
+width: 100%;
+margin: 8px 0;
+padding: 8px;
+}

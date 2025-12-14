@@ -1,0 +1,14 @@
+/* Register sayfasına özel stiller */
+.register-container {
+width: 300px;
+margin: 100px auto;
+text-align: center;
+}
+
+
+.register-form input,
+.register-form select {
+width: 100%;
+margin: 8px 0;
+padding: 8px;
+}
