@@ -1,24 +1,28 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+import Login from "./pages/Login";
+import AdminDashboard from "./pages/AdminDashboard";
+import DriverDashboard from "./pages/DriverDashboard";
+import TechnicianDashboard from "./pages/TechnicianDashboard";
+import Vehicles from "./pages/Vehicles";
 
 function App() {
-return (
-// Router uygulamanın tamamını sarar
-<Router>
-<Routes>
-{/* Login sayfası */}
-<Route path="/" element={<Login />} />
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* Login */}
+        <Route path="/" element={<Login />} />
 
+        {/* Dashboards */}
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/driver" element={<DriverDashboard />} />
+        <Route path="/technician" element={<TechnicianDashboard />} />
 
-{/* Register (Kayıt Ol) sayfası */}
-<Route path="/register" element={<Register />} />
-</Routes>
-</Router>
-);
+        {/* Test / Data Pages */}
+        <Route path="/vehicles" element={<Vehicles />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
-
 
 export default App;

@@ -1,95 +1,57 @@
-// React ve useState hook'u import edilir
-// useState → form alanlarındaki verileri tutmak için kullanılır
-import React, { useState } from "react";
-
-// useNavigate → role göre farklı sayfalara yönlendirme yapmak için
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-// Login sayfasına ait CSS dosyası
-import "../styles/Login.css";
-
 function Login() {
-  // Kullanıcının girdiği email bilgisini tutar
-  const [email, setEmail] = useState("");
-
-  // Kullanıcının girdiği şifreyi tutar
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-
-  // Kullanıcının seçtiği rolü tutar (driver / technician / admin)
-  const [role, setRole] = useState("");
-
-  // Sayfa yönlendirme işlemleri için kullanılır
   const navigate = useNavigate();
 
-  // Login formu gönderildiğinde çalışır
-  const handleLogin = (e) => {
-    e.preventDefault(); // Sayfanın yenilenmesini engeller
+  const handleLogin = async () => {
+    const res = await fetch(
+      "http://localhost/fleettrack/api/login.php",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      }
+    );
 
-    /*
-      ŞU ANDA BACKEND YOK
-      Bu yüzden sadece role bakarak yönlendirme yapıyoruz.
-      İleride burada:
-      - email & şifre backend'e gönderilecek
-      - kullanıcı doğrulanacak
-    */
+    const data = await res.json();
 
-    if (role === "driver") {
-      navigate("/driver"); // Sürücü paneline git
+    if (data.success) {
+      localStorage.setItem("user", JSON.stringify(data.user));
+    
+      if (data.user.role_name === "admin") {
+        navigate("/admin");
+      } else if (data.user.role_name === "driver") {
+        navigate("/driver");
+      } else if (data.user.role_name === "technician") {
+        navigate("/technician");
+      }
     }
-
-    if (role === "technician") {
-      navigate("/technician"); // Teknisyen paneline git
-    }
-
-    if (role === "admin") {
-      navigate("/admin"); // Yönetici paneline git
+     else {
+      alert(data.message);
     }
   };
 
   return (
-    <div className="login-container">
-      <h2>FleetTrack Giriş</h2>
+    <div>
+      <h2>FleetTrack Login</h2>
 
-      {/* Rol seçimi alanı */}
-      <div className="role-buttons">
-        <button onClick={() => setRole("driver")}>Sürücü</button>
-        <button onClick={() => setRole("technician")}>Teknisyen</button>
-        <button onClick={() => setRole("admin")}>Yönetici</button>
-      </div>
+      <input
+        placeholder="Kullanıcı Adı"
+        onChange={(e) => setUsername(e.target.value)}
+      />
 
-      {/* Rol seçilmeden login formu gösterilmez */}
-      {role && (
-        <form onSubmit={handleLogin} className="login-form">
-          {/* Email girişi */}
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+      <input
+        type="password"
+        placeholder="Şifre"
+        onChange={(e) => setPassword(e.target.value)}
+      />
 
-          {/* Şifre girişi */}
-          <input
-            type="password"
-            placeholder="Şifre"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-
-          {/* Giriş butonu */}
-          <button type="submit">Giriş Yap</button>
-        </form>
-      )}
-
-      {/* Kayıt ol sayfasına yönlendirme */}
-      <p>
-        Hesabın yok mu? <a href="/register">Kayıt Ol</a>
-      </p>
+      <button onClick={handleLogin}>Giriş Yap</button>
     </div>
   );
 }
 
-// Component dışa aktarılır
 export default Login;
