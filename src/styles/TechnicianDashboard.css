@@ -1,0 +1,187 @@
+/* GENEL DASHBOARD */
+.technician-dashboard {
+  background-color: #f4f6f9;
+  min-height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+  padding: 20px 24px;
+}
+
+/* ================= HEADER / ÜST BAR ================= */
+.dashboard-header {
+  background-color: #1e293b;
+  color: white;
+  padding: 24px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  border-radius: 12px;
+}
+
+.dashboard-header h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.dashboard-header p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #f8fafc; /* silik değil */
+}
+
+/* ================= FORM ================= */
+.maintenance-form {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 30px;
+}
+
+/* Araç seçimi */
+.maintenance-form select {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  margin-top: 10px;
+  border-radius: 8px;
+  border: 1px solid #cbd5f5;
+  outline: none;
+}
+
+.maintenance-form select:focus {
+  border-color: #2563eb;
+}
+
+/* ================= PARÇA LİSTESİ ================= */
+.parts-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 20px;
+}
+
+.parts-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+/* Parça ekle butonu */
+.parts-list button {
+  margin-left: 15px;
+  padding: 6px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.parts-list button:hover {
+  background-color: #1d4ed8;
+}
+
+/* ================= EKLENEN PARÇALAR ================= */
+.selected-parts {
+  margin-top: 20px;
+  background-color: #f8fafc;
+  padding: 14px;
+  border-radius: 8px;
+}
+
+.selected-parts h4 {
+  margin: 0 0 10px 0;
+  font-size: 15px;
+}
+
+.selected-parts ul {
+  list-style: none;
+  padding: 0;
+}
+
+.selected-parts li {
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+/* ================= TOPLAM MALİYET ================= */
+.total-cost {
+  margin-top: 15px;
+  font-weight: bold;
+  color: #1e293b;
+}
+
+/* ================= SUBMIT BUTONU ================= */
+.maintenance-form button[type="submit"] {
+  margin-top: 20px;
+  padding: 10px 14px;
+  font-size: 14px;
+  background-color: #16a34a;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.maintenance-form button[type="submit"]:hover {
+  background-color: #15803d;
+}
+
+/* ================= MESAJLAR ================= */
+.message {
+  margin-top: 12px;
+  font-weight: 600;
+}
+
+.message.success {
+  color: #16a34a;
+}
+
+.message.error {
+  color: #dc2626;
+}
+
+/* ================= TABLO ================= */
+.maintenance-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.maintenance-table th,
+.maintenance-table td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 14px;
+}
+
+.maintenance-table th {
+  background-color: #f1f5f9;
+  font-weight: 600;
+}
+.complete-btn {
+  background: #2ecc71;
+  border: none;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.complete-btn:hover {
+  background: #27ae60;
+}
+

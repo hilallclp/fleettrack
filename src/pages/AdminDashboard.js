@@ -1,185 +1,312 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "../styles/Admin.css";
 
 function AdminDashboard() {
+  const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  /* ---------- STATES ---------- */
+  const [show, setShow] = useState("");
   const [vehicles, setVehicles] = useState([]);
-  const [showVehicles, setShowVehicles] = useState(false);
-
   const [maintenance, setMaintenance] = useState([]);
-  const [showMaintenance, setShowMaintenance] = useState(false);
-
   const [alerts, setAlerts] = useState([]);
-  const [showAlerts, setShowAlerts] = useState(false);
-
   const [users, setUsers] = useState([]);
-  const [showUsers, setShowUsers] = useState(false);
-
   const [assignments, setAssignments] = useState([]);
-  const [showAssignments, setShowAssignments] = useState(false);
+  const [logs, setLogs] = useState([]);
+  const [selectedUser, setSelectedUser] = useState("");
+  const [selectedVehicle, setSelectedVehicle] = useState("");
 
-  // Araçları yükle
+  const [newUser, setNewUser] = useState({
+    user_name: "",
+    phone: "",
+    role_id: 2 // default: Driver
+  });
+
+  /* ---------- LOADERS ---------- */
+
   const loadVehicles = () => {
+    setShow("vehicles");
     fetch("http://localhost/fleettrack/api/vehicles.php")
-      .then(res => res.json())
-      .then(data => {
-        setVehicles(data);
-        setShowVehicles(true);
-      });
+      .then(r => r.json())
+      .then(setVehicles);
   };
 
-  // Bakımları yükle
   const loadMaintenance = () => {
+    setShow("maintenance");
     fetch("http://localhost/fleettrack/api/maintenance.php")
-      .then(res => res.json())
-      .then(data => {
-        setMaintenance(data);
-        setShowMaintenance(true);
-      });
+      .then(r => r.json())
+      .then(setMaintenance);
   };
 
-  // Uyarıları yükle
   const loadAlerts = () => {
+    setShow("alerts");
     fetch("http://localhost/fleettrack/api/alerts.php")
-      .then(res => res.json())
-      .then(data => {
-        setAlerts(data);
-        setShowAlerts(true);
-      });
+      .then(r => r.json())
+      .then(setAlerts);
   };
 
-  // Kullanıcıları yükle
   const loadUsers = () => {
+    setShow("users");
+  
     fetch("http://localhost/fleettrack/api/users.php")
-      .then(res => res.json())
-      .then(data => {
-        console.log("Users API response:", data);
-        setUsers(data.data);
-        setShowUsers(true);
-      })
-      .catch(err => console.error("Users fetch error:", err));
+      .then(r => r.json())
+      .then(d => {
+        console.log("USERS FROM API:", d);
+        setUsers(d); // ✅ DOĞRUSU
+      });
   };
   
 
-  // Atamaları yükle
   const loadAssignments = () => {
+    setShow("assignments");
+  
+    fetch("http://localhost/fleettrack/api/users.php")
+      .then(r => r.json())
+      .then(setUsers);
+  
+    fetch("http://localhost/fleettrack/api/vehicles.php")
+      .then(r => r.json())
+      .then(setVehicles);
+  
     fetch("http://localhost/fleettrack/api/assignments.php")
-      .then(res => res.json())
-      .then(data => {
-        setAssignments(data.data);
-        setShowAssignments(true);
-      });
+      .then(r => r.json())
+      .then(d => setAssignments(d.data));
+  };
+  
+
+  const loadLogs = () => {
+    setShow("logs");
+    fetch("http://localhost/fleettrack/api/logs.php")
+      .then(r => r.json())
+      .then(setLogs);
   };
 
-  return (
-    <div style={{ padding: "20px" }}>
-      <h2>Admin Panel</h2>
+  /* ---------- USERS ---------- */
 
-      {/* Menü */}
-      <div style={{ marginBottom: "20px" }}>
-        <button onClick={loadVehicles}>🚗 Araçları Listele</button>
-        <button onClick={loadMaintenance} style={{ marginLeft: "10px" }}>🛠 Bakımları Listele</button>
-        <button onClick={loadAlerts} style={{ marginLeft: "10px" }}>⚠️ Uyarıları Listele</button>
-        <button onClick={loadUsers} style={{ marginLeft: "10px" }}>👤 Kullanıcıları Listele</button>
-        <button onClick={loadAssignments} style={{ marginLeft: "10px" }}>📋 Atamaları Listele</button>
-      </div>
+  const addUser = async () => {
+    if (!newUser.user_name || !newUser.phone) return;
 
-      {/* Araç Listesi */}
-      {showVehicles && (
-        <div>
-          <h3>Araç Listesi</h3>
-          <table border="1" cellPadding="8">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Plaka</th>
-                <th>Model</th>
-                <th>Kilometre</th>
-                <th>Durum</th>
+    await fetch("http://localhost/fleettrack/api/add_user.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newUser)
+    });
+
+    setNewUser({ user_name: "", phone: "", role_id: 2 });
+    loadUsers();
+  };
+
+  const deleteUser = async (id) => {
+    if (!window.confirm("Silinsin mi?")) return;
+
+    await fetch("http://localhost/fleettrack/api/delete_user.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: id })
+    });
+
+    loadUsers();
+  };
+/* ---------- ASSIGN VEHICLE ---------- */
+const assignVehicle = async () => {
+  if (!selectedUser || !selectedVehicle) {
+    alert("Driver ve araç seçmelisin");
+    return;
+  }
+
+  try {
+    const res = await fetch("http://localhost/fleettrack/api/assign_vehicle.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: selectedUser,
+        vehicle_id: selectedVehicle
+      })
+    });
+
+    const data = await res.json();
+
+    if (!data.success) {
+      alert(data.message || "Atama yapılamadı");
+      return;
+    }
+
+    alert("Araç başarıyla atandı");
+
+    setSelectedUser("");
+    setSelectedVehicle("");
+    loadAssignments();
+
+  } catch (err) {
+    alert("Bu araç zaten atanmış");
+  }
+};
+
+
+const removeAssignment = async (assignment_id) => {
+  if (!window.confirm("Atama kaldırılsın mı?")) return;
+
+  await fetch("http://localhost/fleettrack/api/remove_assignment.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ assignment_id })
+  });
+
+  loadAssignments();
+};
+
+const activeVehicleIds = assignments
+  .filter(a => a.end_date === null)
+  .map(a => Number(a.vehicle_id));
+
+  const drivers = users.filter(u => u.rol_name === "driver");
+
+  
+
+  /* ---------- RENDER ---------- */
+
+return (
+  <div className="admin-dashboard">
+
+  <div className="dashboard-header">
+    <h2>Hoş geldin {user?.user_name}</h2>
+
+    {/* Logout Button */}
+    <button
+      className="logout-btn"
+      onClick={() => {
+        localStorage.removeItem("user");
+        navigate("/"); // login sayfasına yönlendir
+      }}
+      style={{
+        marginLeft: "auto",
+        padding: "5px 10px",
+        backgroundColor: "#f44336",
+        color: "white",
+        border: "none",
+        borderRadius: "5px",
+        cursor: "pointer"
+      }}
+    >
+      Çıkış Yap
+    </button>
+  </div>
+
+  {/* BUTTON BAR */}
+  <div className="button-bar">
+      <button onClick={loadVehicles}>🚗 Araçlar</button>
+      <button onClick={loadMaintenance}>🛠 Bakımlar</button>
+      <button onClick={loadAlerts}>⚠️ Uyarılar</button>
+      <button onClick={loadUsers}>👤 Kullanıcılar</button>
+      <button onClick={loadAssignments}>📋 Atamalar</button>
+      <button onClick={loadLogs}>🕒 Loglar</button>
+    </div>
+
+  
+      {/* ---------- VEHICLES ---------- */}
+      {show === "vehicles" && (
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th><th>Plaka</th><th>Model</th><th>KM</th><th>Durum</th>
+            </tr>
+          </thead>
+          <tbody>
+            {vehicles.map(v => (
+              <tr key={v.vehicle_id}>
+                <td>{v.vehicle_id}</td>
+                <td>{v.plate_number}</td>
+                <td>{v.model}</td>
+                <td>{v.mileage}</td>
+                <td>{v.status}</td>
               </tr>
-            </thead>
-            <tbody>
-              {vehicles.map(v => (
-                <tr key={v.vehicle_id}>
-                  <td>{v.vehicle_id}</td>
-                  <td>{v.plate_number}</td>
-                  <td>{v.model}</td>
-                  <td>{v.mileage}</td>
-                  <td>{v.status}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       )}
 
-      {/* Bakım Listesi */}
-      {showMaintenance && (
-        <div style={{ marginTop: "30px" }}>
-          <h3>Bakım Kayıtları</h3>
-          <table border="1" cellPadding="8">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Plaka</th>
-                <th>Teknisyen</th>
-                <th>Maliyet</th>
-                <th>Durum</th>
+      {/* ---------- MAINTENANCE ---------- */}
+      {show === "maintenance" && (
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th><th>Plaka</th><th>Teknisyen</th><th>Maliyet</th><th>Durum</th>
+            </tr>
+          </thead>
+          <tbody>
+            {maintenance.map(m => (
+              <tr key={m.maintenance_id}>
+                <td>{m.maintenance_id}</td>
+                <td>{m.plate_number}</td>
+                <td>{m.technician}</td>
+                <td>{m.cost} ₺</td>
+                <td>{m.status}</td>
               </tr>
-            </thead>
-            <tbody>
-              {maintenance.map(m => (
-                <tr key={m.maintenance_id}>
-                  <td>{m.maintenance_id}</td>
-                  <td>{m.plate_number}</td>
-                  <td>{m.technician}</td>
-                  <td>{m.cost} ₺</td>
-                  <td>{m.status}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       )}
 
-      {/* Uyarılar */}
-      {showAlerts && (
-        <div style={{ marginTop: "30px" }}>
-          <h3>Uyarılar</h3>
-          <table border="1" cellPadding="8">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Araç</th>
-                <th>Oluşturan</th>
-                <th>Tip</th>
-                <th>Önem</th>
+      {/* ---------- ALERTS ---------- */}
+      {show === "alerts" && (
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th><th>Araç</th><th>Tip</th><th>Önem</th>
+            </tr>
+          </thead>
+          <tbody>
+            {alerts.map(a => (
+              <tr key={a.alerts_id}>
+                <td>{a.alerts_id}</td>
+                <td>{a.plate_number}</td>
+                <td>{a.alert_type}</td>
+                <td>{a.severity}</td>
               </tr>
-            </thead>
-            <tbody>
-              {alerts.map(a => (
-                <tr key={a.alerts_id}>
-                  <td>{a.alerts_id}</td>
-                  <td>{a.plate_number}</td>
-                  <td>{a.created_by}</td>
-                  <td>{a.alert_type}</td>
-                  <td>{a.severity}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       )}
 
-      {/* Kullanıcılar */}
-      {showUsers && (
-        <div style={{ marginTop: "30px" }}>
-          <h3>Kullanıcılar</h3>
-          <table border="1" cellPadding="8">
+      {/* ---------- USERS ---------- */}
+      {show === "users" && (
+        <>
+          <div className="add-user-box">
+            <input
+              placeholder="Ad Soyad"
+              value={newUser.user_name}
+              onChange={e =>
+                setNewUser({ ...newUser, user_name: e.target.value })
+              }
+            />
+
+            <input
+              placeholder="Telefon"
+              value={newUser.phone}
+              onChange={e =>
+                setNewUser({ ...newUser, phone: e.target.value })
+              }
+            />
+
+            <select
+              value={newUser.role_id}
+              onChange={e =>
+                setNewUser({ ...newUser, role_id: Number(e.target.value) })
+              }
+            >
+              <option value={1}>Admin</option>
+              <option value={2}>Driver</option>
+              <option value={3}>Technician</option>
+            </select>
+
+            <button onClick={addUser}>➕</button>
+          </div>
+
+          <table>
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Ad Soyad</th>
-                <th>Telefon</th>
-                <th>Rol</th>
+                <th>ID</th><th>Ad</th><th>Telefon</th><th>Rol</th><th></th>
               </tr>
             </thead>
             <tbody>
@@ -189,25 +316,49 @@ function AdminDashboard() {
                   <td>{u.user_name}</td>
                   <td>{u.phone}</td>
                   <td>{u.rol_name}</td>
+                  <td>
+                    <button onClick={() => deleteUser(u.user_id)}>❌</button>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
+        </>
       )}
 
-      {/* Atamalar */}
-      {showAssignments && (
-        <div style={{ marginTop: "30px" }}>
-          <h3>Atamalar</h3>
-          <table border="1" cellPadding="8">
+            {/* ---------- ASSIGNMENTS ---------- */}
+            {show === "assignments" && (
+        <>
+          <div className="assign-box">
+            <select value={selectedUser} onChange={e => setSelectedUser(e.target.value)}>
+              <option value="">Driver seç</option>
+              {drivers.map(d => (
+                <option key={d.user_id} value={d.user_id}>
+                  {d.user_name}
+                </option>
+              ))}
+            </select>
+
+            <select value={selectedVehicle} onChange={e => setSelectedVehicle(e.target.value)}>
+              <option value="">Araç seç</option>
+              {vehicles
+  .filter(v => !activeVehicleIds.includes(Number(v.vehicle_id)))
+  .map(v => (
+    <option key={v.vehicle_id} value={v.vehicle_id}>
+      {v.plate_number}
+    </option>
+  ))}
+
+            </select>
+
+            <button onClick={assignVehicle}>➕ Ata</button>
+          </div>
+
+          <table>
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Araç</th>
-                <th>Kullanıcı</th>
-                <th>Başlangıç Tarihi</th>
-                <th>Bitiş Tarihi</th>
+                <th>ID</th><th>Araç</th><th>Kullanıcı</th>
+                <th>Başlangıç</th><th>Bitiş</th><th></th>
               </tr>
             </thead>
             <tbody>
@@ -218,12 +369,45 @@ function AdminDashboard() {
                   <td>{a.user_name}</td>
                   <td>{a.start_date}</td>
                   <td>{a.end_date || "-"}</td>
+                  <td>
+                    {!a.end_date && (
+                      <button
+                        className="danger-btn"
+                        onClick={() => removeAssignment(a.assignments_id)}
+                      >
+                        ❌
+                      </button>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
+        </>
       )}
+      {/* ---------- LOGS ---------- */}
+      {show === "logs" && (
+        <table>
+          <thead>
+            <tr>
+              <th>Kullanıcı</th><th>Rol</th><th>İşlem</th><th>Tarih</th>
+            </tr>
+          </thead>
+          <tbody>
+            {logs
+              .filter(l => l.action === "login")
+              .map((l, i) => (
+                <tr key={i}>
+                  <td>{l.user_name}</td>
+                  <td>{l.rol_name}</td>
+                  <td>{l.action}</td>
+                  <td>{new Date(l.created_at).toLocaleString("tr-TR")}</td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
+      )}
+
     </div>
   );
 }
