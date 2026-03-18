@@ -36,7 +36,3 @@ fleettrack
 3. Run React:
    npm install
    npm start
-
-## 👤 Author
-
-Hilal Calp
